@@ -97,12 +97,12 @@ static unsigned int CompileShader(unsigned int type, const std::string& source)
     }
 
     return id;
+
     //unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER); //fragmentShader object
 
 }
 
-//shader
-//new function CreateShader
+//shader //new function CreateShader
 static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
 {
     unsigned int program = glCreateProgram();
@@ -139,6 +139,8 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(2);
+
     //glewInit();
     if (glewInit() != GLEW_OK)
         std::cout << "Error!" << std::endl;
@@ -178,11 +180,16 @@ int main(void)
     std::cout << source.FragementSource<< std::endl; */
 
     unsigned int shader = CreateShader(source.VertexSource, source.FragementSource); // CreateShader function takes two strings of sourcecode
-    GLCall(glUseProgram(shader));
+    GLCall(glUseProgram(shader)); //binds shader, shader = shader id
+
+    GLCall( int location = glGetUniformLocation(shader, "u_Color")); //retriving the actual location of "u_Color" variable
+    ASSERT(location != -1);
+    GLCall (glUniform4f(location, 0.8f, 0.1f, 0.8f,1.0f));
 
   
 
-
+    float r = 0.0f;
+    float increment = 0.05f;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -193,10 +200,25 @@ int main(void)
         //drawcall
        // glDrawArrays(GL_TRIANGLES, 0, 6); 
         //GLClearError();
+
+        GLCall(glUniform4f(location, r, 0.1f, 0.8f, 1.0f)); //unifors are set per draw
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr)); //always use unsigned int to avoid invalid enum
+
+        if (r > 1.0f)
+        {
+            increment = -0.05f;
+        }
+        else if (r < 0.0f)
+        {
+            increment = 0.05f;
+        }
+
+        r += increment;
+
         //ASSERT(GLLogCall());
         //glGetError();
         /* Swap front and back buffers */
+
         GLCall(glfwSwapBuffers(window));
 
         /* Poll for and process events */
