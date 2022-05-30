@@ -128,6 +128,10 @@ int main(void)
     /* Initialize the library */
     if (!glfwInit())
         return -1;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
@@ -159,13 +163,18 @@ int main(void)
         0,1,2,
         2,3,0
     };
+
+    unsigned int vao;
+    GLCall(glGenVertexArrays(1, &vao)); //generate vertext array object = vao
+    GLCall(glBindVertexArray(vao)); //bind vao
+
     unsigned int buffer;
-    GLCall( glGenBuffers(1, &buffer));
+    GLCall(glGenBuffers(1, &buffer));
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
     GLCall(glBufferData(GL_ARRAY_BUFFER, 4 * 2* sizeof(float), positions,GL_STATIC_DRAW));
 
     GLCall(glEnableVertexAttribArray(0));
-    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0)); //specification of layout
 
     unsigned int ibo; //ibo = index buffer object
     GLCall(glGenBuffers(1, &ibo)); //generates buffer
@@ -174,11 +183,6 @@ int main(void)
 
     ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
 
- /* std::cout << "Vertex!" << std::endl;
-    std::cout << source.VertexSource << std::endl;
-    std::cout << "Fragement!" << std::endl;
-    std::cout << source.FragementSource<< std::endl; */
-
     unsigned int shader = CreateShader(source.VertexSource, source.FragementSource); // CreateShader function takes two strings of sourcecode
     GLCall(glUseProgram(shader)); //binds shader, shader = shader id
 
@@ -186,6 +190,7 @@ int main(void)
     ASSERT(location != -1);
     GLCall (glUniform4f(location, 0.8f, 0.1f, 0.8f,1.0f));
 
+    GLCall(glBindVertexArray(0));
     GLCall(glUseProgram(0));
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
@@ -199,17 +204,14 @@ int main(void)
         
         GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
-        //bind shader
-        GLCall(glUseProgram(shader));
-        //setup uniform
-        GLCall(glUniform4f(location, r, 0.1f, 0.8f, 1.0f)); //unifors are set per draw
-        //bind vertex buffer
-        GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-        //setup layout of the vertex buffer
-        GLCall(glEnableVertexAttribArray(0));
-        GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
-        //bind index buffer
+        
+        GLCall(glUseProgram(shader));//bind shader
+        GLCall(glUniform4f(location, r, 0.1f, 0.8f, 1.0f)); //setup uniform //unifors are set per draw
+
+        GLCall(glBindVertexArray(vao));
         GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+        //GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));//bind vertex buffer
+        
         //call draw element
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr)); //always use unsigned int to avoid invalid enum
 
