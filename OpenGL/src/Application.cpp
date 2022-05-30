@@ -6,28 +6,9 @@
 #include<string>
 #include<sstream>
 
-//macro
-#define ASSERT(x) if (!(x)) __debugbreak(); //breaks exaclty where error occurs
-#define GLCall(x) GLClearError();\
-    x;\
-    ASSERT(GLLogCall(#x, __FILE__, __LINE__)) //says exaclty in which file, function and line the error is
+#include "Renderer.h"
 
 
-static void GLClearError() 
-{
-    while (glGetError() != GL_NO_ERROR);
-}
-
-static bool GLLogCall(const char* function, const char* file, int line) 
-{
-    while (GLenum error = glGetError())
-    {
-        std::cout << "[OpenGL Error] (" << error <<"): " << function <<
-            " " << file << ":" << line << std::endl;
-        return false;
-    }
-    return true;
-}
 
 struct ShaderProgramSource
 {
@@ -168,7 +149,7 @@ int main(void)
     GLCall(glGenVertexArrays(1, &vao)); //generate vertext array object = vao
     GLCall(glBindVertexArray(vao)); //bind vao
 
-    unsigned int buffer;
+    unsigned int buffer; //vertex buffer
     GLCall(glGenBuffers(1, &buffer));
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
     GLCall(glBufferData(GL_ARRAY_BUFFER, 4 * 2* sizeof(float), positions,GL_STATIC_DRAW));
